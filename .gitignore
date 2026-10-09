@@ -1,0 +1,9 @@
+data/*.txt
+data/*.csv
+*.pt
+*.pth
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+.env
+.venv/
