@@ -1,0 +1,350 @@
+[
+  {
+    "accuracy": 0.7550567778566359,
+    "macro_f1": 0.7546640313342089,
+    "weighted_f1": 0.7533046581157863,
+    "detection_rate": 0.6280682615132861,
+    "false_positive_rate": 0.07712902893625785,
+    "attack_auc": 0.7687485240781102,
+    "novel_attack_detection_rate": 0.4216,
+    "known_attack_detection_rate": 0.7133105802047781,
+    "recall_normal": 0.9228709710637422,
+    "precision_normal": 0.6524936294139061,
+    "f1_normal": 0.7644800818903011,
+    "recall_attack": 0.6280682615132861,
+    "precision_attack": 0.9149733227381087,
+    "f1_attack": 0.7448479807781166,
+    "confusion_matrix": [
+      [
+        8962,
+        749
+      ],
+      [
+        4773,
+        8060
+      ]
+    ],
+    "model": "Logistic Regression",
+    "seed": 0,
+    "train_seconds": 11.9
+  },
+  {
+    "accuracy": 0.7677430801987225,
+    "macro_f1": 0.7665702156286973,
+    "weighted_f1": 0.7642787993661074,
+    "detection_rate": 0.6120938206187174,
+    "false_positive_rate": 0.026567809700339822,
+    "attack_auc": 0.959650160181734,
+    "novel_attack_detection_rate": 0.23306666666666667,
+    "known_attack_detection_rate": 0.7685786634371904,
+    "recall_normal": 0.9734321902996602,
+    "precision_normal": 0.6550481602106576,
+    "f1_normal": 0.7831165603512551,
+    "recall_attack": 0.6120938206187174,
+    "precision_attack": 0.9681991864908172,
+    "f1_attack": 0.7500238709061396,
+    "confusion_matrix": [
+      [
+        9453,
+        258
+      ],
+      [
+        4978,
+        7855
+      ]
+    ],
+    "model": "Random Forest",
+    "seed": 0,
+    "train_seconds": 16.2
+  },
+  {
+    "accuracy": 0.8016767210787793,
+    "macro_f1": 0.8014322656445594,
+    "weighted_f1": 0.8004674238422406,
+    "detection_rate": 0.6733421647315515,
+    "false_positive_rate": 0.028730305838739572,
+    "attack_auc": 0.9713778779468798,
+    "novel_attack_detection_rate": 0.4224,
+    "known_attack_detection_rate": 0.7769459429703842,
+    "recall_normal": 0.9712696941612604,
+    "precision_normal": 0.6923076923076923,
+    "f1_normal": 0.808399400042854,
+    "recall_attack": 0.6733421647315515,
+    "precision_attack": 0.9687219730941704,
+    "f1_attack": 0.7944651312462648,
+    "confusion_matrix": [
+      [
+        9432,
+        279
+      ],
+      [
+        4192,
+        8641
+      ]
+    ],
+    "model": "XGBoost",
+    "seed": 0,
+    "train_seconds": 17.2
+  },
+  {
+    "accuracy": 0.7759492547906317,
+    "macro_f1": 0.775102872990329,
+    "weighted_f1": 0.7731922410448878,
+    "detection_rate": 0.6276786410036624,
+    "false_positive_rate": 0.028112449799196786,
+    "attack_auc": 0.9461280616294188,
+    "novel_attack_detection_rate": 0.2501333333333333,
+    "known_attack_detection_rate": 0.7835516899702741,
+    "recall_normal": 0.9718875502008032,
+    "precision_normal": 0.6638998311761396,
+    "f1_normal": 0.7888995695239688,
+    "recall_attack": 0.6276786410036624,
+    "precision_attack": 0.9672190201729106,
+    "f1_attack": 0.7613061764566892,
+    "confusion_matrix": [
+      [
+        9438,
+        273
+      ],
+      [
+        4778,
+        8055
+      ]
+    ],
+    "model": "C-LSTM",
+    "seed": 0,
+    "train_seconds": 170.8
+  },
+  {
+    "accuracy": 0.7527945351312988,
+    "macro_f1": 0.7523463887147768,
+    "weighted_f1": 0.7508874595047856,
+    "detection_rate": 0.6238603600093509,
+    "false_positive_rate": 0.07682010091648646,
+    "attack_auc": 0.7698799200903621,
+    "novel_attack_detection_rate": 0.4064,
+    "known_attack_detection_rate": 0.7136408675547726,
+    "recall_normal": 0.9231798990835135,
+    "precision_normal": 0.6500145011600929,
+    "f1_normal": 0.7628813342977492,
+    "recall_attack": 0.6238603600093509,
+    "precision_attack": 0.9147623400365631,
+    "f1_attack": 0.7418114431318045,
+    "confusion_matrix": [
+      [
+        8965,
+        746
+      ],
+      [
+        4827,
+        8006
+      ]
+    ],
+    "model": "Logistic Regression",
+    "seed": 1,
+    "train_seconds": 16.5
+  },
+  {
+    "accuracy": 0.7839779985805536,
+    "macro_f1": 0.7833288120021824,
+    "weighted_f1": 0.7816863804805657,
+    "detection_rate": 0.6405361178212421,
+    "false_positive_rate": 0.026464833693749357,
+    "attack_auc": 0.961413839948003,
+    "novel_attack_detection_rate": 0.33066666666666666,
+    "known_attack_detection_rate": 0.7684685676538588,
+    "recall_normal": 0.9735351663062507,
+    "precision_normal": 0.672069382242127,
+    "f1_normal": 0.7951888300109344,
+    "recall_attack": 0.6405361178212421,
+    "precision_attack": 0.9696826707561638,
+    "f1_attack": 0.7714687939934303,
+    "confusion_matrix": [
+      [
+        9454,
+        257
+      ],
+      [
+        4613,
+        8220
+      ]
+    ],
+    "model": "Random Forest",
+    "seed": 1,
+    "train_seconds": 16.1
+  },
+  {
+    "accuracy": 0.7997249822569198,
+    "macro_f1": 0.7994485333947843,
+    "weighted_f1": 0.7984173824418723,
+    "detection_rate": 0.6698355801449388,
+    "false_positive_rate": 0.02862732983214911,
+    "attack_auc": 0.9658879560544976,
+    "novel_attack_detection_rate": 0.41333333333333333,
+    "known_attack_detection_rate": 0.7757348893537378,
+    "recall_normal": 0.9713726701678509,
+    "precision_normal": 0.6900512070226774,
+    "f1_normal": 0.8068944869766049,
+    "recall_attack": 0.6698355801449388,
+    "precision_attack": 0.9686725264818571,
+    "f1_attack": 0.7920025798129635,
+    "confusion_matrix": [
+      [
+        9433,
+        278
+      ],
+      [
+        4237,
+        8596
+      ]
+    ],
+    "model": "XGBoost",
+    "seed": 1,
+    "train_seconds": 16.7
+  },
+  {
+    "accuracy": 0.7955110007097232,
+    "macro_f1": 0.7951426127202268,
+    "weighted_f1": 0.7939395716080846,
+    "detection_rate": 0.6614977012389932,
+    "false_positive_rate": 0.027391617753063535,
+    "attack_auc": 0.964824907126804,
+    "novel_attack_detection_rate": 0.3632,
+    "known_attack_detection_rate": 0.7846526478035891,
+    "recall_normal": 0.9726083822469365,
+    "precision_normal": 0.6849662774675466,
+    "f1_normal": 0.8038297872340425,
+    "recall_attack": 0.6614977012389932,
+    "precision_attack": 0.9696173615077098,
+    "f1_attack": 0.786455438206411,
+    "confusion_matrix": [
+      [
+        9445,
+        266
+      ],
+      [
+        4344,
+        8489
+      ]
+    ],
+    "model": "C-LSTM",
+    "seed": 1,
+    "train_seconds": 153.3
+  },
+  {
+    "accuracy": 0.7528388928317956,
+    "macro_f1": 0.7523917624757386,
+    "weighted_f1": 0.7509346215867929,
+    "detection_rate": 0.6239382841112756,
+    "false_positive_rate": 0.07682010091648646,
+    "attack_auc": 0.7763057577100627,
+    "novel_attack_detection_rate": 0.40613333333333335,
+    "known_attack_detection_rate": 0.7138610591214356,
+    "recall_normal": 0.9231798990835135,
+    "precision_normal": 0.6500616343992459,
+    "f1_normal": 0.7629137945706749,
+    "recall_attack": 0.6239382841112756,
+    "precision_attack": 0.9147720781446361,
+    "f1_attack": 0.7418697303808024,
+    "confusion_matrix": [
+      [
+        8965,
+        746
+      ],
+      [
+        4826,
+        8007
+      ]
+    ],
+    "model": "Logistic Regression",
+    "seed": 2,
+    "train_seconds": 13.7
+  },
+  {
+    "accuracy": 0.7606902058197303,
+    "macro_f1": 0.75924443252869,
+    "weighted_f1": 0.7566607437967906,
+    "detection_rate": 0.6000935089223096,
+    "false_positive_rate": 0.027082689733292142,
+    "attack_auc": 0.9600875775107495,
+    "novel_attack_detection_rate": 0.18773333333333334,
+    "known_attack_detection_rate": 0.7703401959704943,
+    "recall_normal": 0.9729173102667078,
+    "precision_normal": 0.6480109739368999,
+    "f1_normal": 0.7779012803095797,
+    "recall_attack": 0.6000935089223096,
+    "precision_attack": 0.9669763937719739,
+    "f1_attack": 0.7405875847478002,
+    "confusion_matrix": [
+      [
+        9448,
+        263
+      ],
+      [
+        5132,
+        7701
+      ]
+    ],
+    "model": "Random Forest",
+    "seed": 2,
+    "train_seconds": 15.8
+  },
+  {
+    "accuracy": 0.7856192334989354,
+    "macro_f1": 0.7850511134442336,
+    "weighted_f1": 0.7835207676195753,
+    "detection_rate": 0.6448998675290267,
+    "false_positive_rate": 0.02842137781896818,
+    "attack_auc": 0.9657658701468945,
+    "novel_attack_detection_rate": 0.328,
+    "known_attack_detection_rate": 0.7757348893537378,
+    "recall_normal": 0.9715786221810319,
+    "precision_normal": 0.6743138936535163,
+    "f1_normal": 0.7961017592709784,
+    "recall_attack": 0.6448998675290267,
+    "precision_attack": 0.9677268475210478,
+    "f1_attack": 0.7740004676174889,
+    "confusion_matrix": [
+      [
+        9435,
+        276
+      ],
+      [
+        4557,
+        8276
+      ]
+    ],
+    "model": "XGBoost",
+    "seed": 2,
+    "train_seconds": 16.9
+  },
+  {
+    "accuracy": 0.7877040454222853,
+    "macro_f1": 0.7871559557739713,
+    "weighted_f1": 0.7856602076253381,
+    "detection_rate": 0.6473155146886932,
+    "false_positive_rate": 0.02677376171352075,
+    "attack_auc": 0.9540388545091218,
+    "novel_attack_detection_rate": 0.2853333333333333,
+    "known_attack_detection_rate": 0.796763183970054,
+    "recall_normal": 0.9732262382864793,
+    "precision_normal": 0.6761822994920226,
+    "f1_normal": 0.7979567713610267,
+    "recall_attack": 0.6473155146886932,
+    "precision_attack": 0.9696509863429439,
+    "f1_attack": 0.7763551401869159,
+    "confusion_matrix": [
+      [
+        9451,
+        260
+      ],
+      [
+        4526,
+        8307
+      ]
+    ],
+    "model": "C-LSTM",
+    "seed": 2,
+    "train_seconds": 179.9
+  }
+]

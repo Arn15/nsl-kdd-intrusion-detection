@@ -1,0 +1,32 @@
+{
+  "lr": {
+    "params": {
+      "C": 10.0
+    },
+    "val_macro_f1": 0.804765343153418
+  },
+  "rf": {
+    "params": {
+      "n_estimators": 200,
+      "max_depth": null
+    },
+    "val_macro_f1": 0.972136622656744
+  },
+  "xgb": {
+    "params": {
+      "n_estimators": 300,
+      "max_depth": 6,
+      "learning_rate": 0.1
+    },
+    "val_macro_f1": 0.9750892022640834
+  },
+  "clstm": {
+    "params": {
+      "cnn_filters": 128,
+      "lstm_hidden": 256,
+      "dropout": 0.3,
+      "lr": 0.001
+    },
+    "val_macro_f1": 0.946308751918191
+  }
+}
