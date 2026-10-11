@@ -197,6 +197,20 @@ def check_constraints(fs: FeatureSpace, X_adv, X_orig, mask, tol: float = 1e-5) 
             "non_integer": int(non_int.sum()), "rows_changed": float(changed.any(1).mean())}
 
 
+def attack_mode(model):
+    """Freeze BatchNorm/dropout (eval) but keep RNN layers in train mode.
+
+    cuDNN can only backpropagate through an LSTM in training mode; a single-layer LSTM has
+    no dropout, so its forward pass is identical in either mode.
+    """
+    import torch.nn as nn
+    model.eval()
+    for m in model.modules():
+        if isinstance(m, nn.RNNBase):
+            m.train()
+    return model
+
+
 def lr_logit_fn(lr_model, device="cpu"):
     """Differentiable logits for a fitted sklearn LogisticRegression (binary or multinomial)."""
     W = torch.tensor(lr_model.coef_, dtype=torch.float32, device=device)
@@ -207,7 +221,7 @@ def lr_logit_fn(lr_model, device="cpu"):
 
 
 def clstm_logit_fn(clf):
-    clf.model.eval()
+    attack_mode(clf.model)
     return lambda x: clf.model(x)
 
 
@@ -246,7 +260,7 @@ def train_clstm_adversarial(n_classes, params, X, y, mask, X_val, y_val, fs: Fea
         for bx, by, bm in loader:
             bx, by, bm = bx.to(device), by.to(device), bm.to(device)
             radius = eps * span * bm
-            model.eval()                                  # fixed BatchNorm stats while attacking
+            attack_mode(model)                            # fixed BatchNorm stats while attacking
             delta = (torch.rand_like(bx) * 2 - 1) * radius
             for _ in range(pgd_steps):
                 delta.requires_grad_(True)
