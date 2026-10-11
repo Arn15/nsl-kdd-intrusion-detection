@@ -1,0 +1,42 @@
+{
+  "lr": {
+    "accuracy": 0.7510645848119234,
+    "macro_f1": 0.7505757774273767,
+    "detection_rate": 0.6208213200342866,
+    "false_positive_rate": 0.07682010091648646,
+    "attack_auc": 0.7714187184894764,
+    "novel_attack_detection_rate": 0.3984
+  },
+  "rf": {
+    "accuracy": 0.7677430801987225,
+    "macro_f1": 0.7665702156286973,
+    "detection_rate": 0.6120938206187174,
+    "false_positive_rate": 0.026567809700339822,
+    "attack_auc": 0.959650160181734,
+    "novel_attack_detection_rate": 0.23306666666666667
+  },
+  "xgb": {
+    "accuracy": 0.8016767210787793,
+    "macro_f1": 0.8014322656445594,
+    "detection_rate": 0.6733421647315515,
+    "false_positive_rate": 0.028730305838739572,
+    "attack_auc": 0.9713778779468798,
+    "novel_attack_detection_rate": 0.4224
+  },
+  "clstm": {
+    "accuracy": 0.7983498935415189,
+    "macro_f1": 0.7980421676110452,
+    "detection_rate": 0.666952388373724,
+    "false_positive_rate": 0.028009473792606324,
+    "attack_auc": 0.9598547039280128,
+    "novel_attack_detection_rate": 0.2256
+  },
+  "clstm_at": {
+    "accuracy": 0.7961320085166785,
+    "macro_f1": 0.7957662771138052,
+    "detection_rate": 0.662121094054391,
+    "false_positive_rate": 0.02677376171352075,
+    "attack_auc": 0.960340014368174,
+    "novel_attack_detection_rate": 0.3272
+  }
+}

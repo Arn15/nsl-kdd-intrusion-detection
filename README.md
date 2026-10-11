@@ -2,7 +2,7 @@
 
 Hybrid CNN-LSTM (C-LSTM) intrusion detection on NSL-KDD, compared against Random Forest, Logistic Regression and gradient-boosted baselines, with a focus on rare-attack detection and adversarial robustness.
 
-> **Status:** pipeline and baseline results complete; adversarial-robustness study implemented (results pending). Next: SHAP.
+> **Status:** baseline and adversarial-robustness results complete. Next: SHAP explanations.
 
 ## Background
 Originally built as a team project for NC State's Neural Networks & Deep Learning course (Spring 2026) and presented at the NC State AI Student Symposium 2026. Team: Asavari Hangal, Nidhi Grover, Arnav Yennam.
@@ -90,7 +90,26 @@ Why worst case: in a first run, PGD with a random start alone reported the adver
 
 Run: `python -m src.run_adversarial` (GPU recommended; `notebooks/04_adversarial_kaggle.ipynb` for Kaggle). Outputs go to `results/adversarial/`.
 
-_Results pending the full run._
+**Results** (worst-case attack detection rate on the 12,833 KDDTest+ attacks; full tables in [`results/adversarial/results.md`](results/adversarial/results.md))
+
+| Model | Clean | eps=0.05 | eps=0.1 | eps=0.2 | eps=0.3 |
+|---|---|---|---|---|---|
+| Logistic Regression | 0.621 | 0.001 | 0.001 | 0.001 | 0.000 |
+| Random Forest | 0.612 | 0.539 | 0.535 | 0.524 | 0.518 |
+| XGBoost | 0.673 | 0.565 | 0.546 | 0.532 | 0.527 |
+| C-LSTM | 0.667 | 0.241 | 0.109 | 0.017 | 0.005 |
+| **C-LSTM + adversarial training** | 0.662 | **0.626** | **0.612** | **0.562** | 0.505 |
+
+![Detection under attack](results/adversarial/detection_vs_eps.png)
+
+**Findings**
+- **The standard C-LSTM is easy to evade.** Changing only non-functional features by up to 10% of their range cuts its detection from 66.7% to 10.9%, and at 20% almost every attack gets through (1.7%). Logistic regression collapses at the smallest budget.
+- **Adversarial training closes most of the gap at almost no cost.** At the training budget (eps = 0.1), worst-case detection goes from 10.9% to 61.2% (5.6×), and clean accuracy and false-positive rate are essentially unchanged (79.6% vs 79.8%, FPR 2.7% vs 2.8%). It is the most robust model up to eps = 0.2, and degrades gradually beyond the budget it was trained on.
+- **Tree models are naturally harder to evade but still lose ground.** XGBoost drops from 67.3% to 52.7% under black-box queries. Their piecewise-constant decision surfaces give gradient-free attackers less signal.
+- **The strongest attack differs per model.** On the C-LSTM, black-box queries (12.0% detection at eps = 0.1) beat white-box PGD (20.5%). Evaluating with a single gradient attack would have overstated robustness. (A first run that used only random-start PGD reported the adversarially trained model at 72%, *above* its clean rate. That was a sign of a failed attack, which is why only worst-case numbers are reported.)
+- **R2L and U2R attacks become nearly undetectable for every model under attack** (≤ 21% at eps = 0.2), while DoS and Probe stay detectable for the robust models (66–73%). Stealthy attacks remain the weak spot.
+
+**Limitations:** one seed; black-box attacks limited to 300 queries per connection (a stronger attacker could do better); the feature-level threat model is a proxy for packet-level manipulation.
 
 **Limitation:** budgets on min-max-scaled features allow large absolute changes on heavy-tailed counts (e.g. `num_root`). That is standard in the NIDS adversarial literature, but it's still a simplification of what's physically achievable on the wire.
 

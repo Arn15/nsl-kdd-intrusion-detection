@@ -1,0 +1,16 @@
+{
+  "eps": [
+    0.0,
+    0.05,
+    0.1,
+    0.2,
+    0.3
+  ],
+  "train_eps": 0.1,
+  "steps": 40,
+  "epochs": 20,
+  "query_iters": 300,
+  "seed": 0,
+  "quick": false,
+  "out": null
+}
