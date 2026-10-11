@@ -72,6 +72,9 @@ class Split:
     test_attack_names: np.ndarray
     class_names: list[str]
     feature_names: list[str]
+    preprocessor: object = None            # fitted ColumnTransformer (train only)
+    train_attack_names: np.ndarray = None  # raw attack label per training row
+    train_raw_max: dict = None             # per-feature max on the training split
 
 
 def load_raw(data_dir: Path = DATA_DIR) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -129,6 +132,9 @@ def make_split(task: str = "5class", val_size: float = 0.1, seed: int = 0,
         test_attack_names=test.label.to_numpy(),
         class_names=CLASSES[task],
         feature_names=list(pre.get_feature_names_out()),
+        preprocessor=pre,
+        train_attack_names=tr.label.to_numpy(),
+        train_raw_max={c: float(tr[c].max()) for c in COLUMNS[:-2] if c not in CATEGORICAL},
     )
 
 

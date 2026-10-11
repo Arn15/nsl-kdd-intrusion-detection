@@ -2,7 +2,7 @@
 
 Hybrid CNN-LSTM (C-LSTM) intrusion detection on NSL-KDD, compared against Random Forest, Logistic Regression and gradient-boosted baselines, with a focus on rare-attack detection and adversarial robustness.
 
-> **Status:** pipeline and baseline results complete. Next: adversarial robustness and SHAP.
+> **Status:** pipeline and baseline results complete; adversarial-robustness study implemented (results pending). Next: SHAP.
 
 ## Background
 Originally built as a team project for NC State's Neural Networks & Deep Learning course (Spring 2026) and presented at the NC State AI Student Symposium 2026. Team: Asavari Hangal, Nidhi Grover, Arnav Yennam.
@@ -31,7 +31,7 @@ Results land in `results/<task>/` (`results.md`, `summary.csv`, `per_seed.json`,
 - [x] Validation-only model selection; multi-seed reporting
 - [x] Baselines: Logistic Regression, Random Forest, XGBoost
 - [x] Novel-attack (zero-day) detection rate
-- [ ] Adversarial robustness (feature-constrained FGSM/PGD) and adversarial training
+- [x] Adversarial robustness: constrained white-box PGD, black-box query attack, transfer, adversarial training
 - [ ] SHAP explanations per attack category
 
 ## Results (KDDTest+, mean ± std over 3 seeds)
@@ -70,6 +70,27 @@ Full outputs: `results/5class/`, `results/binary/`.
 - **XGBoost is the strongest model overall** (best accuracy, macro-F1 and AUC on both tasks). The C-LSTM is competitive (second on binary accuracy) but less stable across seeds (macro-F1 std 0.065).
 - **Novel attacks are the main failure mode.** Only 18–41% of test attacks never seen in training are flagged. R2L recall stays below 15% for every model, because most KDDTest+ R2L traffic comes from unseen attack types.
 - **Simpler models generalize better to unseen attacks.** Logistic Regression has the best novel-attack detection (0.39–0.41) despite lower overall accuracy; Random Forest has the lowest false-positive rate but misses the most novel attacks.
+
+## Adversarial robustness
+Can an attacker change their traffic so the detector labels it normal? `src/run_adversarial.py` tests the binary (attack vs. normal) detectors under **realistic, constrained** evasion attacks.
+
+**Threat model**
+- The attacker controls their own connections but must keep the attack working. Following IDSGAN (Lin et al.), features that carry the attack ("functional" features) are frozen per category: intrinsic and time-based traffic features for DoS/Probe, and intrinsic and content features for R2L/U2R. The attacker may only change the remaining groups (17–19 features).
+- Protocol, service, flag and binary flags are never changed. Every modified value is snapped back to a valid raw value: rates stay in [0, 1], and counts and bytes stay non-negative integers no larger than seen in training. Each run asserts these constraints on every adversarial example.
+- Budget `eps`: the maximum change per modifiable feature, as a fraction of its valid range (0.05–0.3).
+
+**Attacks**
+- **White-box PGD** (40 steps, margin loss toward "normal") on the C-LSTM and logistic regression.
+- **Black-box, query-based random search** (300 iterations, scores only) on Random Forest and XGBoost.
+- **Transfer** of the C-LSTM and logistic-regression examples to the tree models.
+
+**Defense:** PGD adversarial training of the C-LSTM (Madry et al.) with the same constraints, at `eps = 0.1`.
+
+Run: `python -m src.run_adversarial` (GPU recommended; `notebooks/04_adversarial_kaggle.ipynb` for Kaggle). Outputs go to `results/adversarial/`.
+
+_Results pending the full run._
+
+**Limitation:** budgets on min-max-scaled features allow large absolute changes on heavy-tailed counts (e.g. `num_root`). That is standard in the NIDS adversarial literature, but it's still a simplification of what's physically achievable on the wire.
 
 ## Repository layout
 ```
