@@ -79,10 +79,12 @@ Can an attacker change their traffic so the detector labels it normal? `src/run_
 - Protocol, service, flag and binary flags are never changed. Every modified value is snapped back to a valid raw value: rates stay in [0, 1], and counts and bytes stay non-negative integers no larger than seen in training. Each run asserts these constraints on every adversarial example.
 - Budget `eps`: the maximum change per modifiable feature, as a fraction of its valid range (0.05–0.3).
 
-**Attacks**
-- **White-box PGD** (40 steps, margin loss toward "normal") on the C-LSTM and logistic regression.
-- **Black-box, query-based random search** (300 iterations, scores only) on Random Forest and XGBoost.
-- **Transfer** of the C-LSTM and logistic-regression examples to the tree models.
+**Attacks**, reported as the **worst case per connection** (it evades if any attack succeeds):
+- **White-box PGD** (40 steps, margin loss toward "normal", from both a random and a zero start) on every differentiable model.
+- **Black-box, query-based random search** (300 iterations, scores only) on every model, including the tree models.
+- **Transfer** of examples crafted on the other differentiable models.
+
+Why worst case: in a first run, PGD with a random start alone reported the adversarially trained model detecting *more* attacks under attack than without (0.72 vs 0.69), which is a sign of an overly weak attack (gradient masking), not real robustness. Zero-start PGD and black-box queries break through it, so only the worst case over all attacks is reported.
 
 **Defense:** PGD adversarial training of the C-LSTM (Madry et al.) with the same constraints, at `eps = 0.1`.
 

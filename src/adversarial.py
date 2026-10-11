@@ -129,7 +129,8 @@ def row_masks(fs: FeatureSpace, attack_names) -> np.ndarray:
 
 
 def pgd_to_normal(logit_fn, X, mask, fs: FeatureSpace, eps: float, steps: int = 40,
-                  step_frac: float = 0.1, device="cpu", batch: int = 4096, seed: int = 0):
+                  step_frac: float = 0.1, device="cpu", batch: int = 4096, seed: int = 0,
+                  random_start: bool = True):
     """L-inf PGD that pushes samples toward class 0 (normal) within the constraints.
 
     logit_fn maps a float tensor [B, F] to logits [B, C] and must be differentiable.
@@ -144,7 +145,8 @@ def pgd_to_normal(logit_fn, X, mask, fs: FeatureSpace, eps: float, steps: int = 
         x0 = torch.tensor(X[i:i + batch], device=device)
         m = torch.tensor(mask[i:i + batch], dtype=torch.float32, device=device)
         radius = eps * span * m
-        delta = (torch.rand(x0.shape, generator=g).to(device) * 2 - 1) * radius
+        delta = ((torch.rand(x0.shape, generator=g).to(device) * 2 - 1) * radius if random_start
+                 else torch.zeros_like(x0))
         for _ in range(steps):
             delta.requires_grad_(True)
             logits = logit_fn(x0 + delta)

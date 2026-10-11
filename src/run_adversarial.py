@@ -102,45 +102,55 @@ def main(argv=None):
 
     rows = []
     label = {"lr": "Logistic Regression", "rf": "Random Forest", "xgb": "XGBoost",
-             "rf_bb": "Random Forest ", "xgb_bb": "XGBoost ",          # trailing space: separate rows
              "clstm": "C-LSTM", "clstm_at": "C-LSTM + adversarial training"}
+    diff = ("lr", "clstm", "clstm_at")                      # differentiable: white-box PGD possible
+    logit = {"lr": lambda: A.lr_logit_fn(models["lr"], device),
+             "clstm": lambda: A.clstm_logit_fn(models["clstm"]),
+             "clstm_at": lambda: A.clstm_logit_fn(models["clstm_at"])}
+
+    def check(name, Z):
+        chk = A.check_constraints(fs, Z, X_att, mask)
+        assert chk["illegal_changes"] == chk["out_of_range"] == chk["non_integer"] == 0, (name, chk)
+
     for eps in a.eps:
         t0 = time.time()
-        if eps == 0:
-            adv = {"clstm": X_att, "lr": X_att, "clstm_at": X_att}
-        else:
-            adv = {"clstm": A.pgd_to_normal(A.clstm_logit_fn(models["clstm"]), X_att, mask, fs, eps, a.steps, device=device),
-                   "lr": A.pgd_to_normal(A.lr_logit_fn(models["lr"], device), X_att, mask, fs, eps, a.steps, device=device),
-                   "clstm_at": A.pgd_to_normal(A.clstm_logit_fn(models["clstm_at"]), X_att, mask, fs, eps, a.steps, device=device)}
-        detected = {
-            "lr": (detection(models["lr"], adv["lr"]), "white-box"),
-            "clstm": (detection(models["clstm"], adv["clstm"]), "white-box"),
-            "clstm_at": (detection(models["clstm_at"], adv["clstm_at"]), "white-box"),
-        }
-        for tree in ("rf", "xgb"):
-            # transfer: evades if either source's example evades
-            d = detection(models[tree], adv["clstm"]) & detection(models[tree], adv["lr"])
-            detected[tree] = (d, "transfer")
-            # black-box: query the tree model's scores directly
-            adv_bb = (X_att if eps == 0 else
-                      A.random_search_to_normal(models[tree].predict_proba, X_att, mask, fs, eps, a.query_iters, seed=a.seed))
-            if eps:
-                chk = A.check_constraints(fs, adv_bb, X_att, mask)
-                assert chk["illegal_changes"] == chk["out_of_range"] == chk["non_integer"] == 0, (tree, chk)
-            detected[tree + "_bb"] = (detection(models[tree], adv_bb), "black-box (queries)")
-        for name, (d, kind) in detected.items():
-            r = {"eps": eps, "model": label[name], "attack": "none" if eps == 0 else kind,
-                 "detection_rate": float(d.mean())}
-            for c in A.CATEGORIES:
-                r[f"det_{c}"] = float(d[cats == c].mean()) if (cats == c).any() else float("nan")
-            rows.append(r)
+        # 1) white-box PGD (random start and zero start) on every differentiable model
+        pgd = {}
         if eps:
-            for src in adv:
-                chk = A.check_constraints(fs, adv[src], X_att, mask)
-                assert chk["illegal_changes"] == chk["out_of_range"] == chk["non_integer"] == 0, (src, chk)
-        changed = np.abs(adv["clstm"] - X_att).max(1) > 1e-6 if eps else np.zeros(len(X_att), bool)
-        print(f"  eps {eps:.2f}: " + "  ".join(f"{label[n].strip()[:12]}/{k[:5]} {d.mean():.3f}" for n, (d, k) in detected.items())
-              + f"  | rows changed {changed.mean():.2f} ({time.time()-t0:.0f}s)")
+            for src in diff:
+                for rs in (True, False):
+                    Z = A.pgd_to_normal(logit[src](), X_att, mask, fs, eps, a.steps, device=device,
+                                        seed=a.seed, random_start=rs)
+                    check(f"pgd-{src}", Z)
+                    pgd[(src, rs)] = Z
+        for name in models:
+            if eps == 0:
+                d = detection(models[name], X_att)
+                per = {"white-box": d, "black-box": d, "transfer": d}
+            else:
+                # 2) black-box score-based queries on the model itself
+                bb = A.random_search_to_normal(models[name].predict_proba, X_att, mask, fs, eps,
+                                               a.query_iters, seed=a.seed)
+                check(f"bb-{name}", bb)
+                per = {"black-box": detection(models[name], bb)}
+                if name in diff:
+                    per["white-box"] = detection(models[name], pgd[(name, True)]) & detection(models[name], pgd[(name, False)])
+                # 3) transfer: examples crafted on the other differentiable models
+                tr = np.ones(len(X_att), bool)
+                for (src, rs), Z in pgd.items():
+                    if src != name:
+                        tr &= detection(models[name], Z)
+                per["transfer"] = tr
+            worst = np.logical_and.reduce(list(per.values()))   # evaded if ANY attack evades
+            r = {"eps": eps, "model": label[name], "detection_worst": float(worst.mean())}
+            for k, v in per.items():
+                r[f"detection_{k.replace('-', '_')}"] = float(v.mean())
+            for c in A.CATEGORIES:
+                r[f"det_{c}"] = float(worst[cats == c].mean()) if (cats == c).any() else float("nan")
+            rows.append(r)
+        print(f"  eps {eps:.2f} worst-case detection: " +
+              "  ".join(f"{r['model'][:22]} {r['detection_worst']:.3f}"
+                        for r in rows if r["eps"] == eps) + f"  ({time.time()-t0:.0f}s)")
 
     df = pd.DataFrame(rows)
     df.to_csv(out / "detection_vs_eps.csv", index=False)
@@ -148,23 +158,35 @@ def main(argv=None):
     (out / "config.json").write_text(json.dumps(vars(a), indent=2))
 
     # ---- report ----
-    piv = df.pivot_table(index="model", columns="eps", values="detection_rate", sort=False)
+    piv = df.pivot_table(index="model", columns="eps", values="detection_worst", sort=False)
     lines = ["# Adversarial robustness — binary detectors on KDDTest+", "",
-             f"Attack detection rate on the {len(X_att)} attack connections in KDDTest+ (higher is better) "
-             f"under constrained evasion attacks. eps = max change per modifiable feature as a fraction of its "
-             f"valid range. White-box PGD ({a.steps} steps) for C-LSTM and logistic regression; transfer from "
-             f"both to the tree models. Adversarial training used eps = {a.train_eps}.", "",
-             "| Model | Attack | " + " | ".join(f"eps={e:g}" for e in piv.columns) + " |",
-             "|---|---|" + "---|" * len(piv.columns)]
-    kind_of = {m: df[(df.model == m) & (df.eps > 0)].attack.iloc[0] if (df.eps > 0).any() else "-" for m in piv.index}
+             f"Attack detection rate on the {len(X_att)} attack connections in KDDTest+ (higher is better) under "
+             f"constrained evasion. eps = max change per modifiable feature as a fraction of its valid range. "
+             f"**Worst case**: a connection counts as evading if any attack succeeds. Attacks: white-box PGD "
+             f"({a.steps} steps, random and zero start) on differentiable models, black-box score queries "
+             f"({a.query_iters} iterations) on every model, and transfer from the other differentiable models. "
+             f"Adversarial training used eps = {a.train_eps}.", "",
+             "## Worst-case detection rate", "",
+             "| Model | " + " | ".join(f"eps={e:g}" for e in piv.columns) + " |",
+             "|---|" + "---|" * len(piv.columns)]
     for m in piv.index:
-        lines.append(f"| {m.strip()} | {kind_of[m]} | " + " | ".join(f"{v:.3f}" for v in piv.loc[m]) + " |")
-    show_eps = [e for e in a.eps if e > 0][len([e for e in a.eps if e > 0]) // 2] if any(e > 0 for e in a.eps) else 0
-    sub = df[df.eps == show_eps]
-    lines += ["", f"## Per attack category at eps = {show_eps:g}", "",
+        lines.append(f"| {m} | " + " | ".join(f"{v:.3f}" for v in piv.loc[m]) + " |")
+    pos = [e for e in a.eps if e > 0]
+    for show in pos[1:3] if len(pos) > 2 else pos[-1:]:
+        sub = df[df.eps == show]
+        lines += ["", f"## By attack at eps = {show:g}", "",
+                  "| Model | White-box PGD | Black-box queries | Transfer | Worst case |", "|---|---|---|---|---|"]
+        for _, r in sub.iterrows():
+            wb = r.get("detection_white_box")
+            wb = "–" if wb is None or np.isnan(wb) else f"{wb:.3f}"
+            lines.append(f"| {r.model} | {wb} | {r.detection_black_box:.3f} | {r.detection_transfer:.3f} | "
+                         f"{r.detection_worst:.3f} |")
+    show = pos[len(pos) // 2] if pos else 0
+    sub = df[df.eps == show]
+    lines += ["", f"## Worst-case detection by attack category at eps = {show:g}", "",
               "| Model | " + " | ".join(c.upper() for c in A.CATEGORIES) + " |", "|---|" + "---|" * 4]
     for _, r in sub.iterrows():
-        lines.append(f"| {r.model.strip()} ({r.attack}) | " + " | ".join(f"{r[f'det_{c}']:.3f}" for c in A.CATEGORIES) + " |")
+        lines.append(f"| {r.model} | " + " | ".join(f"{r[f'det_{c}']:.3f}" for c in A.CATEGORIES) + " |")
     lines += ["", "## Clean performance (no attack)", "",
               "| Model | Accuracy | Macro-F1 | Detection | FPR | Novel-attack detection |", "|---|---|---|---|---|---|"]
     for n, c in clean.items():
@@ -178,10 +200,9 @@ def main(argv=None):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(7, 4.5))
     for m in piv.index:
-        ax.plot(piv.columns, piv.loc[m], marker="o", label=f"{m.strip()} ({kind_of[m]})",
-                linestyle={"transfer": ":", "black-box (queries)": "--"}.get(kind_of[m], "-"))
+        ax.plot(piv.columns, piv.loc[m], marker="o", label=m)
     ax.set_xlabel("attack budget eps (fraction of feature range)")
-    ax.set_ylabel("attack detection rate")
+    ax.set_ylabel("worst-case attack detection rate")
     ax.set_title("Detection under constrained evasion (KDDTest+)")
     ax.set_ylim(0, 1); ax.grid(alpha=0.3); ax.legend(fontsize=8)
     fig.tight_layout()
