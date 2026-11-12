@@ -109,15 +109,17 @@ Run: `python -m src.run_adversarial` (GPU recommended; `notebooks/04_adversarial
 - **The strongest attack differs per model.** On the C-LSTM, black-box queries (12.0% detection at eps = 0.1) beat white-box PGD (20.5%). Evaluating with a single gradient attack would have overstated robustness. (A first run that used only random-start PGD reported the adversarially trained model at 72%, *above* its clean rate. That was a sign of a failed attack, which is why only worst-case numbers are reported.)
 - **R2L and U2R attacks become nearly undetectable for every model under attack** (≤ 21% at eps = 0.2), while DoS and Probe stay detectable for the robust models (66–73%). Stealthy attacks remain the weak spot.
 
-**Limitations:** one seed; black-box attacks limited to 300 queries per connection (a stronger attacker could do better); the feature-level threat model is a proxy for packet-level manipulation.
-
-**Limitation:** budgets on min-max-scaled features allow large absolute changes on heavy-tailed counts (e.g. `num_root`). That is standard in the NIDS adversarial literature, but it's still a simplification of what's physically achievable on the wire.
+**Limitations**
+- One seed; black-box attacks limited to 300 queries per connection (a stronger attacker could do better).
+- The feature-level threat model is a proxy for packet-level manipulation.
+- Budgets on min-max-scaled features allow large absolute changes on heavy-tailed counts (e.g. `num_root`). That is standard in the NIDS adversarial literature, but it's still a simplification of what's physically achievable on the wire.
 
 ## Repository layout
 ```
 data/        download script (data not committed)
 notebooks/   original course notebooks + new analysis notebooks
 src/         pipeline: data.py, models.py, evaluate.py, run.py
-results/     figures and metrics
+             adversarial study: adversarial.py, run_adversarial.py
+results/     5class/, binary/, adversarial/ metrics and figures
 docs/        symposium poster
 ```
